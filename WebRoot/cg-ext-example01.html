@@ -1,0 +1,69 @@
+<html>
+<META http-equiv="Content-Type" content="text/html; charset=gbk">
+<head>
+
+	<title>Chen Gang test1 </title>
+	<link rel="stylesheet" type="text/css" href="resource/ext-3.0.0/resources/css/ext-all.css" /> 
+	<script type="text/javascript" src="resource/ext-3.0.0/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="resource/ext-3.0.0/ext-all.js"></script>
+
+
+<script type="text/javascript"> 
+
+
+    	function addTab(tabpanel, tarid,tabTitle, targetUrl) 
+	{
+        	tabpanel.add({
+            		id: tarid,
+            		title: tabTitle,
+			layout:'fit',
+            		iconCls: 'tabs',
+            		// autoLoad: { url: targetUrl, callback: this.initSearch, scope: this }, //ajax加载
+            		html: "<iframe height=100% frameborder=0 width=100% src=" + targetUrl + "> </iframe>",
+            		closable: true
+        	}); 
+    	}
+
+
+	Ext.onReady( function ()
+	{ 
+		var TabPanel1 = new Ext.TabPanel({
+    			renderTo: 'my-tabs',
+    			activeTab: 0, 
+			region:'center',
+    			items:[
+       				{contentEl:'tab1', title:'Tab 1'},
+        			{contentEl:'tab2', title:'Tab 2'}
+    			]
+		});
+
+		var mainview = new Ext.Viewport({
+			layout : 'fit',
+			items:[TabPanel1],
+			renderTo: Ext.getBody()
+		});
+
+		addTab(TabPanel1, "id1", "百度 ", "http://www.baidu.com");
+		addTab(TabPanel1, "id2", "Google", "http://www.google.cn");
+	});
+
+</script>
+
+
+</head>
+
+<body>
+
+
+<div id="my-tabs"></div>
+
+<div id="tab1" class="x-hide-display">A simple tab</div>
+<div id="tab2" class="x-hide-display">Another one</div>
+
+</body>
+
+</html>
+
+
+
+

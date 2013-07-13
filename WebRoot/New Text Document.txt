@@ -1,0 +1,441 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> 
+<html> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+<title>Panel</title> 
+<link rel="stylesheet" type="text/css" href="resources/css/ext-all.css" /> 
+<script type="text/javascript" src="adapter/ext/ext-base.js"></script> 
+<script type="text/javascript" src="ext-all.js" ></script> 
+<script type="text/javascript" src="formtable.js" ></script> 
+<script type="text/javascript" src="panel.js" ></script> 
+<style type="text/css"> 
+    .x-panel-body p { 
+        margin:10px; 
+    } 
+    #container { 
+        padding:10px; 
+    } 
+</style> 
+</head> 
+<body> 
+<div id="container"></div> 
+</body> 
+</html> 
+
+
+Panel.js 
+
+Ext.onReady(function(){ 
+Ext.BLANK_IMAGE_URL = 'resources/images/default/s.gif'; 
+Ext.QuickTips.init(); 
+
+Ext.myFormPanel = Ext.extend(Ext.form.FormPanel, { 
+                // private 
+               initEvents : function(){ 
+                Ext.FormPanel.superclass.initEvents.call(this); 
+                this.items.on('remove', this.onRemove, this); 
+                this.items.on('add', this.onAdd, this); 
+                if(this.monitorValid){ // initialize after render 
+                 this.startMonitoring(); 
+                } 
+               }, 
+               
+               // private 
+               onAdd : function(ct, c) { 
+                if (c.isFormField) { 
+                 this.form.add(c); 
+                } 
+               }, 
+               add : function(comp){ 
+                if(!this.items){ 
+                 this.initItems(); 
+                } 
+                var a = arguments, len = a.length;               
+                if(len > 1){ 
+                 for(var i = 0; i < len; i++) { 
+                  this.add(a); 
+                 } 
+                 return; 
+                } 
+                var c = this.lookupComponent(this.applyDefaults(comp)); 
+                var pos = this.items.length; 
+                if(this.fireEvent('beforeadd', this, c, pos) !== false && this.onBeforeAdd(c) !== false){ 
+                 this.items.add(c); 
+                 c.ownerCt = this; 
+                 this.fireEvent('add', this, c, pos); 
+                } 
+                return c; 
+               },               
+               doLayout : function(shallow){ 
+                if(this.rendered && this.layout){ 
+                 this.layout.layout(); 
+                } 
+                if(shallow !== false && this.items){ 
+                 var cs = this.items.items; 
+                 for(var i = 0, len = cs.length; i < len; i++) { 
+                  var c = cs; 
+                  if(c.doLayout){ 
+                   c.doLayout(); 
+                  } 
+                 } 
+                } 
+               } 
+}) 
+var formPanel = new Ext.form.FormPanel({ 
+     id:'radiopanel', 
+           labelWidth : 60, 
+           labelAlign : 'right',   
+     region:'center', 
+           frame : true, 
+           maskDisabled : false, 
+           waitMsgTarget : true, 
+           autoScroll : true, 
+           bodyStyle : 'padding:5px 5px 5px', 
+           buttonAlign : 'center', 
+           width: 400, 
+     columns:'3', 
+     layout : 'formtable', 
+     buttons : [{ text : 'save', 
+                        scope : this, 
+       handler:function(){ 
+            var rr = new Ext.form.Radio({ 
+                    fieldLabel : 'Radio', 
+                    name   : 'sex', 
+                    boxLabel : 'boy', 
+                    id    : 'sex-boy', 
+                    allowBlank : false, 
+                    row: 0, 
+                    col: 2, 
+                    value   : 'boy' 
+                   }); 
+             
+             formPanel.add(rr);             
+             formPanel.doLayout(); 
+             
+            } 
+       }],    
+    items : [{ 
+       id:'1001', 
+       fieldLabel : '单选框', 
+                      xtype : 'radio', 
+                      hideLabel : true, 
+                      name : '1', 
+                      boxLabel : '-优惠卡支付', 
+                      inputValue : '2', 
+                      checked : false, 
+       col: 0, 
+       row: 0 
+      }, 
+      {   
+        id:'1002', 
+        xtype : 'radio', 
+        hideLabel : true, 
+        name : '1', 
+        boxLabel : '-支付宝支付', 
+        inputValue : '2', 
+        checked : false, 
+        col: 1, 
+        row: 0 
+      } 
+      ] 
+
+}) 
+
+
+var viewport = new Ext.Viewport( { 
+                  title : '界面标题', 
+                  layout : 'border', 
+                  height:'auto', 
+                  width:'auto', 
+                  items : [formPanel] 
+                 }); 
+}); 
+
+formtable.js 
+
+/** 
+* @class My.ui.FormTableLayout 
+* @extends Ext.layout.ContainerLayout 
+* @author peter 
+* 
+* 
+* 
+* FormTableLayout= FormLayout + TableLayout 
+* 
+* 适用于FormLayout/TableLayout适用的场合。 
+* 除拥有FormLayout/TableLayout特征外，还具有指定单元格显示功能： 
+*   设置autoFlow为true，根据items项的row/col属性定位单元格排列。 
+*   可以在同一单元格内显示多项item(指定row/col)为同一位置即可，按在原数组中的顺序排列。 
+*   注： 
+*    1)若autoFlow为true，items项没有row或col属性的均不被显示。 
+*    2)若某item的row/col设置在被融合了的单元格位置，则该项不被显示。 
+* 
+* 
+* 
+*/ 
+Ext.namespace('My.layout'); 
+My.layout.FormTableLayout=Ext.extend(Ext.layout.ContainerLayout,{ 
+// private 
+monitorResize:false, 
+
+/** 
+* Table列数 
+*/ 
+columns:2, 
+/** 
+* 是否自动排列 
+* 若为true，则按行方向自动排列。 
+* 若为false，则根据item指定的[row,col]排列，无row/col属性的项被忽略显示。 
+*/ 
+autoFlow:false, 
+/** 
+* Form Element显示模板 
+*/ 
+fieldTpl: 
+     new Ext.Template( 
+        '<div class="x-form-item {5}" tabIndex="-1">', 
+            '<label for="{0}" style="{2}" class="x-form-item-label">{1}{4}</label>', 
+            '<div class="x-form-element" id="x-form-el-{0}" style="{3}">', 
+            '</div><div class="{6}"></div>', 
+        '</div>' 
+    ), 
+    
+/** 
+* 普通内容(非Form Element)显示模板 
+*/    
+    cellContentTpl:new Ext.Template('<div class="x-form-item-label">{0}</div>'), 
+hiddenTpl:new Ext.Template('<INPUT class=" x-form-hidden x-form-field" id=ext-comp-1005 type=hidden value={1} name={0} autocomplete="off">'), 
+    
+    // private 
+    setContainer : function(ct){ 
+        My.layout.FormTableLayout.superclass.setContainer.call(this, ct); 
+        this.currentRow = 0; 
+        this.currentColumn = 0; 
+        this.spanCells = []; 
+        this.maxCreatedRowIndex=-1; 
+    },    
+    
+    // private 
+onLayout : function(ct, target){ 
+     var cs = ct.items.items, len = cs.length; 
+   
+     if(!this.table){ 
+         //target.addClass('x-table-layout-ct'); 
+         this.table = target.createChild( 
+             {tag:'table', cls:'x-table-layout', border:0, cellspacing:3, cn: {tag: 'tbody'}}, null, true); 
+    
+         if(!this.autoFlow){ 
+          var items=[]; 
+          for(var i=0;i<len;i++){ 
+           //如果设置了autoFlow为true，则无row、col属性的字段将无法显示。 
+           if(typeof cs.row!='undefined' && typeof cs.col!='undefined'){ 
+     cs.__index=i; 
+     items.push(cs); 
+           } 
+          } 
+          ct.items.items=items.sort(function(item1,item2){ 
+           if(item1.row==item2.row){ 
+            if(item1.col==item2.col){ 
+             return item1.__index-item2.__index; 
+            } 
+            return item1.col-item2.col; 
+           } 
+           return item1.row-item2.row; 
+          }); 
+         } 
+         this.renderAll(ct, target); 
+     }else{ 
+   this.renderAll(ct, target); 
+} 
+}, 
+
+    // private 
+    createRow : function(index){ 
+        var row = this.table.tBodies[0].childNodes[index]; 
+        if(!row){ 
+            row = document.createElement('tr'); 
+            this.table.tBodies[0].appendChild(row); 
+            this.maxCreatedRowIndex=Math.max(this.maxCreatedRowIndex,index); 
+        } 
+        return row; 
+    }, 
+        
+    // private 
+getRow : function(index){ 
+if(!this.autoFlow){ 
+   //确保创建index之前的row 
+   for(var i=Math.max(0,this.maxCreatedRowIndex+1);i<index;i++){ 
+    this.createRow(i); 
+   } 
+} 
+return this.createRow(index); 
+}, 
+
+// private 
+getCellAt : function(c,row,col){ 
+if(this.spanCells[col] && this.spanCells[col][row]){ 
+   return null; 
+} 
+//计算之前有多少spanCells 
+var spanCount=0; 
+for(var i=0;i<col;i++){ 
+   if(this.spanCells && this.spanCells[row]){ 
+    spanCount++; 
+   }   
+} 
+var r=this.getRow(row); 
+
+var cell=r.childNodes[col-spanCount]; 
+if(cell){ 
+   return cell; 
+} 
+this.currentRow=row; 
+//预设置nextCell之前的初始列索引 
+this.currentColumn=spanCount-1; 
+for(var i=spanCount;i<=col;i++){ 
+   this.getNextCell(c); 
+} 
+return r.childNodes[col-spanCount]; 
+}, 
+
+    // private 
+getNextCell : function(c){ 
+        var td = document.createElement('td'), row, colIndex; 
+        if(!this.columns){ 
+            row = this.getRow(0); 
+        }else { 
+         colIndex = this.currentColumn; 
+            if(colIndex !== 0 && (colIndex % this.columns === 0)){ 
+                this.currentRow++; 
+                colIndex = (c.colspan || 1); 
+            }else{ 
+                colIndex += (c.colspan || 1); 
+            } 
+            
+            //advance to the next non-spanning row/col position 
+            var cell = this.getNextNonSpan(colIndex, this.currentRow); 
+            this.currentColumn = cell[0]; 
+            if(cell[1] != this.currentRow){ 
+             this.currentRow = cell[1]; 
+             if(c.colspan){ 
+              this.currentColumn += c.colspan - 1; 
+             } 
+            } 
+            row = this.getRow(this.currentRow); 
+        } 
+        if(c.colspan){ 
+            td.colSpan = c.colspan; 
+        } 
+td.className = 'x-table-layout-cell'; 
+        if(c.rowspan){ 
+            td.rowSpan = c.rowspan; 
+   var rowIndex = this.currentRow, colspan = c.colspan || 1; 
+   //track rowspanned cells to add to the column index during the next call to getNextCell 
+   for(var r = rowIndex+1; r < rowIndex+c.rowspan; r++){ 
+    for(var col=this.currentColumn-colspan+1; col <= this.currentColumn; col++){ 
+     if(!this.spanCells[col]){ 
+      this.spanCells[col] = []; 
+     } 
+     this.spanCells[col][r] = 1; 
+    } 
+   } 
+        } 
+        row.appendChild(td); 
+        return td; 
+    }, 
+    
+    // private 
+    getNextNonSpan: function(colIndex, rowIndex){ 
+     var c = (colIndex <= this.columns ? colIndex : this.columns), r = rowIndex; 
+        for(var i=c; i <= this.columns; i++){ 
+         if(this.spanCells && this.spanCells[r]){ 
+          if(++c > this.columns){ 
+           //exceeded column count, so reset to the start of the next row 
+                 return this.getNextNonSpan(1, ++r); 
+          } 
+         }else{ 
+          break; 
+         } 
+        } 
+        return [c,r]; 
+    }, 
+    
+// private 
+    renderItem : function(c, position, target){ 
+     //target is form or other container 
+     if(c && !c.rendered ){ 
+      var td=this.autoFlow?this.getNextCell(c):this.getCellAt(c,c.row,c.col); 
+      if(!td){ alert("超过最大允许列数！"); 
+       //cell at[row,col] is spanCell，不渲染。(row,col设置不正确) 
+       return; 
+      } 
+         //if(c.isFormField && c.inputType != 'hidden'){ 
+   if(c.inputType != 'hidden'){ 
+             var args = [ 
+                    c.id, c.fieldLabel, 
+                    c.labelStyle||this.labelStyle||'', 
+                    this.elementStyle||'', 
+                    typeof c.labelSeparator == 'undefined' ? this.labelSeparator : c.labelSeparator, 
+                    (c.itemCls||this.container.itemCls||'') + (c.hideLabel ? ' x-hide-label' : ''), 
+                    c.clearCls || 'x-form-clear-left' 
+             ]; 
+             if(typeof position == 'number'){ 
+                 position = target.dom.childNodes[position] || null; 
+             } 
+             if(position){ 
+              //this.fieldTpl.insertBefore(position, args); 
+                 this.fieldTpl.append(td, args); 
+             }else{ 
+                 //this.fieldTpl.append(target, args); 
+              this.fieldTpl.append(td, args); 
+             } 
+             c.render('x-form-el-'+c.id); 
+       } 
+    else { 
+             //My.layout.FormTableLayout.superclass.renderItem.apply(this, arguments); 
+             //this.cellContentTpl.append(td,[c.text||c.html||c.value]);    
+    this.hiddenTpl.append(td,[c.name,c.value]); 
+    
+         } 
+        } 
+    }, 
+    doLayout : function(shallow){ 
+        if(this.rendered && this.layout){ 
+            this.layout.layout(); 
+        } 
+        if(shallow !== false && this.items){ 
+            var cs = this.items.items; 
+            for(var i = 0, len = cs.length; i < len; i++) { 
+                var c = cs; 
+                if(c.doLayout){ 
+                    c.doLayout(); 
+                } 
+            } 
+        } 
+    }, 
+add : function(comp){ alert(""); 
+    if(!this.items){ 
+     this.initItems(); 
+    } 
+    var a = arguments, len = a.length; 
+    if(len > 1){ 
+     for(var i = 0; i < len; i++) { 
+      this.add(a); 
+     } 
+     return; 
+    } 
+    var c = this.lookupComponent(this.applyDefaults(comp)); 
+    var pos = this.items.length; 
+    if(this.fireEvent('beforeadd', this, c, pos) !== false && this.onBeforeAdd(c) !== false){ 
+     this.items.add(c); 
+     c.ownerCt = this; 
+     this.fireEvent('add', this, c, pos); 
+    } 
+    return c; 
+   }, 
+    // private 
+    isValidParent : function(c, target){ 
+        return true; 
+    }    
+}); 
+Ext.Container.LAYOUTS['formtable'] = My.layout.FormTableLayout; 

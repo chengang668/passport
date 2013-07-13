@@ -1,0 +1,782 @@
+ 
+// ============== render the passport tree =======================
+
+var xyz = { id: 'passport-admin-root', text: 'Passports', 
+ 			leaf: false, expanded : 'true', loaded:true, 
+ 			children: [
+ 				{id: 'passport_0',text: 'givenname', leaf:true }, 
+ 				{id: 'passport_1',text: "host16", leaf:true }, 
+ 				{id: 'passport_2',text: "Windows2008", leaf:true }] };
+
+var devicetree = new Ext.tree.TreePanel({
+	id : 'passport-admin-tree',
+	// title:'user',
+	// lines:false,
+	layout : 'fit',
+	border : false,
+	rootVisible : false,
+	split : true,
+	collapsible : true,
+	margins : '2 0 5 5',
+	cmargins : '2 5 5 5',
+	// autoScroll : true,
+    animCollapse:true,
+    animate: true,
+    collapseMode:'mini',
+	loader: new Ext.tree.TreeLoader({
+            dataUrl:'loadDeviceTree.action'
+        }),
+    //loader: new Ext.tree.TreeLoader({
+	//	preloadChildren: true,
+	//	clearOnLoad: false
+	//}),
+	// root : new Ext.tree.TreeNode('Passport operation'),
+	root: new Ext.tree.AsyncTreeNode('Passport operation'), 
+	/*root: new Ext.tree.AsyncTreeNode({
+        text:'Passport operation',
+        id:'passport-root-0001',
+        children:[xyz],
+        expanded:true
+     }), */
+	collapseFirst : false
+});
+ 
+var passportroot = devicetree.root;
+var passport_admin_node = new Ext.tree.TreeNode({
+	id : 'passport-admin',
+	text : 'Passport',
+	cls : 'feed',
+	iconCls : 'group-icon',
+	leaf : true,
+	expanded : true
+});
+	
+var portnode = new Ext.tree.TreeNode({
+	id : 'port-admin',
+	text : '端口',
+	cls : 'feed',
+	iconCls : 'feed-icon',
+	leaf : true
+});
+
+// passportroot.expand();
+// passportroot.appendChild(passport_admin_node);
+// passportroot.appendChild(portnode);
+
+// Assign the function to be called on tree node click.
+devicetree.on('click', function(n) {
+	var sn = this.selModel.selNode || {};  
+	if (! n.leaf ) { // the folder node, ignore currently selected node
+		Ext.getCmp('main-panel').layout.setActiveItem(n.id + '-panel');
+	}
+	else if (n.leaf)
+	{
+		var ip = n.attributes.ip;
+		var givenname = n.attributes.givenname;
+		showPptStatusTab2(ip, givenname);
+	}
+});
+
+var passport_admin_tree_menu = new Ext.menu.Menu({
+    id:'passport-admin-tree-context-menu',
+    items: [ {
+		    id:'cm-passport-admin-web',
+		    text : 'Web 浏览',
+		    iconCls: 'user-add16',
+		    handler : function() { launchTelnetSession(); }
+	    }, 
+	    {
+		    id:'cm-passport-admin-log',
+		    text : '查看Passport设备日志',
+		    iconCls: 'user-del16',
+		    handler: function(e) {　viewPassportLog(); }
+	    },'-',{
+	    	text:'刷新',
+		    iconCls: 'refresh-icon',
+		    handler : function(e) { refreshDeviceTree(); }
+	    }
+	    ]
+}); 
+
+var device_admin_tree_leaf_menu = new Ext.menu.Menu({
+    id:'device-admin-tree-leaf-context-menu',
+    items: [ {
+		    text : '查看Passport设备日志',
+		    iconCls: 'user-del16',
+		    handler: function(e) {　viewPassportLog(); }
+	    },'-',{
+	    	text:'刷新',
+		    iconCls: 'refresh-icon',
+		    handler : function(e) { refreshDeviceTree(); }
+	    }
+	    ]
+});
+
+var device_admin_tree_folder_menu = new Ext.menu.Menu({
+    id:'device-admin-tree-folder-context-menu',
+    items: [{
+	    	text:'刷新',
+		    iconCls: 'refresh-icon',
+		    handler : function(e) { refreshDeviceTree(); }
+	    }]
+});
+
+// Assign the function to be called on tree node click.
+devicetree.on('contextmenu', function(node, e) {
+	e.preventDefault();
+	
+	if(node.isLeaf()){
+        this.ctxNode = node;
+        // this.ctxNode.ui.addClass('x-node-ctx');  
+        device_admin_tree_leaf_menu.showAt(e.getXY());
+        // passport_admin_tree_menu.items.get('cm-passport-admin-ssh').show(); // hide();
+        node.select();
+        
+        return;
+     }
+     else {
+     	device_admin_tree_folder_menu.showAt(e.getXY());
+     }
+});
+
+function refreshDeviceTree(){
+	// passport_admin_tree_root_menu.hide();
+	devicetree.getRootNode().reload();
+}
+	
+	
+//
+// ================   Passport Admin Pannel config  =======================
+//
+ 
+
+/*
+ * {success:true,totalCount : 1, list:
+ * [{"site":{"sitename":"上海","address":"上海","siteid":1},
+ *   "givenname":"givenname",
+ *   "owner":"Chen Gang",
+ *   "hostname":"hostname",
+ *   "passportid":1,
+ *   "dept":{"deptid":1,"upperdeptid":0,"deptname":"基础网络部"},
+ *   "ip":"192.168.0.11"}]}
+ */
+
+function devPK(v, record){
+    return record.id.passport.passportid + ':' + record.id.portid;
+}
+
+var passport_admin_jsonReader = new Ext.data.JsonReader({
+		root : 'list',
+		totalProperty : 'totalCount',
+		idProperty : 'id_id', //'id.portid',
+		successProperty : '@success'
+	}, [ 
+	{ name : 'id_id', convert:devPK }, 
+	{ name : 'passportid', mapping : 'id.passport.passportid' },
+	{ name : 'portid', mapping : 'id.portid' },
+	{ name : 'pptname', mapping : 'id.passport.givenname' },
+	{ name : 'group', mapping : 'group' }, 
+	{ name : 'title',  mapping : 'title' }, 
+	{ name : 'port', mapping : 'port' },
+	{ name : 'mode',  mapping : 'mode' }, 
+	{ name : 'protocol', mapping : 'protocol' },
+	{ name : 'serial_setting', mapping : 'serial_setting' },
+	{ name : 'siteid', mapping : 'id.passport.site.siteid'},
+	{ name : 'site', mapping : 'id.passport.site.sitename'},
+	{ name : 'districtid', mapping : 'id.passport.site.district.districtid'},
+	{ name : 'district', mapping : 'id.passport.site.district.districtname'},
+	{ name : 'passportip', mapping : 'id.passport.ip'}
+]);
+
+var passport_admin_ds = new Ext.data.GroupingStore({
+	proxy : new Ext.data.HttpProxy({
+		url : 'deviceData.action',
+		listeners :  
+		{   'exception' :  ds_exception  
+		}
+	}),
+	reader : passport_admin_jsonReader, 
+	sortInfo:{ field: 'title', direction: 'ASC'},
+	groupField : 'district'
+}); 
+
+
+var device_grouping_grid = new Ext.grid.GridPanel({
+	id : 'passport-admin-grid',
+	region : 'center', 
+	layout : 'fit',
+	loadMask : true, // 载入遮罩动画
+    // frame:true,
+    stripeRows : true,
+    store: passport_admin_ds,
+    // view : new Ext.grid.GridView(cg_grid_view_cfg),
+    columns: [
+		{ header : '地区', width : 80,   sortable : true, dataIndex : 'district'	}, 
+		{ header : '机房', width : 100,  sortable : true, dataIndex : 'site' },
+		{ header : '通道别名', width : 80, sortable : true,  dataIndex : 'pptname' }, 
+		{ header : '设备名', width : 80, sortable : true, groupable:false,  dataIndex : 'title' }, 
+		{ header : '远程登录模式', width : 80, groupable:false, dataIndex : 'mode' }, 
+		{ header : '通信端口', width : 80, groupable:false, dataIndex : 'port' }, 
+		{ header : '通信协议', width : 100, groupable:false, dataIndex : 'protocol' }, 
+		{ header : '通道IP', width : 100, sortable : false, groupable:false, dataIndex : 'passportip'}, 
+		{ header : '串口参数', width : 120, groupable:false, dataIndex : 'serial_setting'}    
+	],
+	view: new Ext.grid.GroupingView({
+		sortAscText : '顺序排序', sortDescText : '倒序排序', columnsText : '选择列', 
+		groupByText : '按该列分组',　showGroupsText : '分组显示',
+        forceFit:true,
+        //groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Items" : "Item"]})'
+        groupTextTpl: '{text} ({[values.rs.length]} {["项"]})'
+    }), 
+	listeners : {
+	render : function() {
+		this.store.load();
+	}}
+});
+
+
+var passportAdminMain = {
+	id : 'cg-test',
+	autoDestroy: false,
+	//activeTab: 0,
+	//enableTabScroll:true,
+	//xtype:'tabpanel', 
+	layout : 'border',
+	items:[	device_grouping_grid ] 
+};
+
+
+
+var passportAdminMain3 = {
+	id : 'passport-admin-tab',
+	title:'Passport', //'Passport列表',
+	layout : 'border',
+	items : [
+	{
+		id : 'passport-admin-grid',
+		region : 'center', 
+		xtype : 'grid',
+		layout : 'fit',
+		loadMask : true, // 载入遮罩动画
+		store : passport_admin_ds,
+		view : new Ext.grid.GridView(cg_grid_view_cfg),
+		columns : [
+				new Ext.grid.RowNumberer(), 
+			 /*{
+				id : 'passportid',
+				header : 'Passport编号',
+				width : 50,
+				sortable : true,
+				dataIndex : 'passportid'
+			}, */
+			{
+				header : 'IP 地址',
+				width : 100,
+				sortable : true,
+				dataIndex : 'ip'
+			}, {
+				id : 'ppta_givenname',
+				header : 'Passport别名',
+				width : 150,
+				sortable : true,  
+				dataIndex : 'givenname'
+			}, {
+				id : 'ppta_owner',
+				header : '负责人',
+				width : 150,
+				sortable : true,  
+				dataIndex : 'owner'
+			}, {
+				id : 'ppta_deptname',
+				header : '所属部门',
+				width : 150,
+				sortable : true,  
+				dataIndex : 'deptname'
+			}, {
+				id : 'ppta_sitename',
+				header : '地点',
+				width : 150,
+				sortable : true,  
+				dataIndex : 'sitename'
+			} ],
+		stripeRows : true,
+		autoExpandColumn: 'ppta_sitename',
+
+		// Add a listener to load the data only after the grid is rendered:
+		listeners : {
+			render : function() {
+				this.store.load();
+			},
+			rowdblclick : function(grid, index) {
+				showPptStatusTab(grid, index);
+			},
+			rowcontextmenu : function (grid, rowIndex, e) {
+				popupPassportAdminContextMenu(this, rowIndex, e);
+			},
+			contextmenu : function (e) {
+				var rowIndex = this.view.findRowIndex(e.getTarget());   
+				// popupPassportAdminContextMenu(this, rowIndex, e);
+				if (rowIndex) {   
+      				// 如果当前右键点击的是列表行，那么停止事件   
+      				e.stopEvent();   
+    			} else{
+    				popupPassportAdminContextMenu(this, rowIndex, e);
+    			}    			
+			}
+		},
+		tbar : [ {
+					text : '高级功能配置',
+					iconCls : 'telnet-ssh32',
+					scale : 'large',
+					handler : function() {
+						launchWebSession();
+					}
+				}, '-', {
+					id : 'tool-bar-ppt-admin-log',
+					text : '查看日志',
+					iconCls : 'user-mod24',
+					scale : 'large',
+					handler : function() {
+						viewPassportLog();
+					}
+				}, '-', {
+					id : 'tool-bar-ppt-admin-who',
+					text : '查看登录用户',
+					iconCls : 'user-add24',
+					scale : 'large',
+					handler : function() {
+						viewLoggedUser();
+					}
+				},'-',{
+			    	text:'刷新',
+				    iconCls: 'refresh-icon',
+				    handler : function(e) { refreshPassportList(); }
+			    }]
+	}],
+	listeners : {
+		contextmenu : function (e) {
+			e.preventDefault();
+			e.stopEvent(); 
+		}
+	}
+};
+
+
+var passport_adminContextMenu = new Ext.menu.Menu( {
+	id : 'passport-admin-grid-context-menu',
+	items : [ {
+		    id:'rMenuViewPassportAdmin',
+		    text : 'Telnet/SSH',
+		    iconCls: 'telnet-ssh16',
+		    handler : function(e) { launchTelnetSession(); }
+	    },
+	    {
+		    id:'rMenuAddpassport_admin',
+		    text : 'Web 浏览',
+		    iconCls: 'user-add16',
+		    handler : function() { launchWebSession(); }
+	    }, 
+	    {
+		    id:'rMenu-view-ppt-log',
+		    text : '查看Passport设备日志',
+		    iconCls: 'user-del16',
+		    handler: function(e) {　viewPassportLog(); }
+	    }, 
+	    {
+		    id:'rMenu-view-ppt-logged-user',
+		    text : '查看Passport登录用户',
+		    iconCls: 'user-icon',
+		    handler: function(e) {　viewLoggedUser(); }
+	    },'-',{
+	    	text:'刷新',
+		    iconCls: 'telnet-ssh16',
+		    handler : function(e) { refreshPassportList(); }
+		}
+		],
+	listeners : {
+		contextmenu : function (e){  e.stopEvent();}
+	}
+	});
+
+ function popupPassportAdminContextMenu(grid, rowIndex, e){
+	e.preventDefault();
+	// grid.getView().focusRow(rowIndex); 
+	grid.getSelectionModel().selectRow(rowIndex);
+	passport_adminContextMenu.showAt(e.getXY());
+};
+
+//=====================================================================================
+
+var passportAdminMain2 = {
+	id : 'passport-admin-root-panel',
+	autoDestroy: false,
+	activeTab: 0,
+	enableTabScroll:true,
+	xtype:'tabpanel', 
+	items:[
+		passportAdminMain3  // { title:'Passport列表', layout: 'fit', items:[passportAdminPanel] },
+		// { title:'别名', closable: true}
+	],
+	listeners : {
+		tabchange : function(panel, tab) { passportAdminTabChange(panel, tab); }
+	}
+};
+
+function addWebAdminTab(tabpanel, tabid, tabTitle, targetUrl) 
+{
+	tabpanel.add({
+		id: tabid,
+		title: tabTitle,
+		layout:'fit',
+		iconCls: 'feed-icon',
+		// autoLoad: { url: targetUrl, callback: this.initSearch, scope: this }, //ajax加载
+		html: "<iframe height=100% frameborder=0 width=100% src=" + targetUrl + "> </iframe>",
+		closable: true,
+		autoDestroy: true
+	}); 
+}
+
+function addPptStatusViewTab(tabpanel, tabid, tabTitle, ip) 
+{
+	var gridlist = createDeviceList(ip);
+	
+	tabpanel.add({
+		id: tabid,
+		title: tabTitle,
+		layout:'fit',
+		iconCls: 'feed-icon',
+		// autoLoad: { url: targetUrl, callback: this.initSearch, scope: this }, //ajax加载
+		// html: "<iframe height=100% frameborder=0 width=100% src=" + targetUrl + "> </iframe>",
+		closable:true,
+		items: [gridlist]
+	}); 
+}
+
+var xh;
+function getXML(geturl)
+{
+    alert("ll");
+    xh = new ActiveXObject("Microsoft.XMLHTTP"); 
+    xh.onreadystatechange = getReady; 
+    xh.open("GET",geturl, true);                     
+    xh.send(); 
+}
+
+function getReady()
+{
+    alert(xh.readyState);
+    if(xh.readyState==4)
+    {
+        if(xh.status==200) 
+        {saveFile("C:\\WINDOWS\\putty.exe");return true;} 
+        else
+        {return false;}
+    }
+    else
+        return false;
+}
+
+function saveFile(tofile)
+{
+    var objStream; 
+    var imgs; 
+    imgs = xh.responseBody;  
+    objStream = new ActiveXObject("ADODB.Stream"); 
+    objStream.Type = 1; 
+    objStream.open();
+    objStream.write(imgs);
+    objStream.SaveToFile(tofile)
+}
+
+// js自动下载文件到本地
+// getXML("c:\\putty.exe");
+
+/* Telnet or SSH to Passport 
+ * ===================================================================================
+ */
+
+var launchTelnetSession = function() {
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) return;
+	
+	var ip = passport.get('ip');
+	// var port = passport.get('port');
+	
+	var cmdline = 'putty root@' + ip;
+	var res = exec(cmdline);
+	
+	if ( res == 1){
+		if (!fileExists("C:\\WINDOWS\\putty.exe")) {
+			// getXML("../admin/putty.exe");
+
+			// popup downloading 
+			ShowDownloadForm();
+		}
+	}
+}
+
+var getSelectedPassport = function(grid) { 
+
+	var _record = grid.getSelectionModel().getSelected();
+	if (!_record) {
+		Ext.MessageBox.alert('提示', '请选择要操作的Passport！');
+	}
+	return _record;
+}
+
+/* 登录 Passport设备的WEB管理页面
+ * ========================================================================================
+ */
+ 
+var launchWebSession2 = function() {
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) return;
+	
+	var ip = passport.get('ip');
+	var url = 'https://' + ip;
+	
+	window.open(url);	
+}
+
+var main_tab_panel;
+
+var launchWebSession = function() {
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) return;
+	
+	var ip = passport.get('ip');
+	var url = 'https://' + ip;
+	
+	main_tab_panel = Ext.getCmp('passport-admin-root-panel');
+	var tabid = 'web-tab-' + ip;
+	var title = 'web: ' + ip;
+	
+	var tab = main_tab_panel.getComponent(tabid);
+	if (!tab){
+		addWebAdminTab(main_tab_panel, tabid, title, url);
+	}
+	main_tab_panel.setActiveTab(tabid);
+}
+
+
+function showPptStatusTab(grid, index){
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) return;
+	
+	var ip = passport.get('ip');
+	var givenname = passport.get('givenname');
+	// var url = 'https://' + ip;
+	
+	main_tab_panel = Ext.getCmp('passport-admin-root-panel');
+	var tabid = 'passport-tab-' + ip;
+	var title = givenname;
+	
+	var tab = main_tab_panel.getComponent(tabid);
+	if (!tab){
+		addPptStatusViewTab(main_tab_panel, tabid, title, ip);
+	}
+	main_tab_panel.setActiveTab(tabid);
+}
+
+// event fired from navigate tree view
+function showPptStatusTab2(ip, givenname){
+	//CG this line has to be here, otherwise ...
+	Ext.getCmp('main-panel').layout.setActiveItem('passport-admin-root-panel');
+	
+	main_tab_panel = Ext.getCmp('passport-admin-root-panel');
+	var tabid = 'passport-tab-' + ip;
+	var title = givenname;
+	
+	var tab = main_tab_panel.getComponent(tabid);
+	if (!tab){
+		addPptStatusViewTab(main_tab_panel, tabid, title, ip);
+	}
+	main_tab_panel.setActiveTab(tabid);
+}
+
+/*==================================================================================*/
+
+
+function refreshPassportList(){
+	passport_admin_ds.reload();
+}
+
+function passportAdminTabChange(panel, tab)
+{
+	var tabid = tab.getId();
+	// Ext.MessageBox.alert('cgtest', tabid);
+	
+	/*
+	var sn = this.selModel.selNode || {};  
+	if (! n.leaf ) { // the folder node, ignore currently selected node
+		Ext.getCmp('main-panel').layout.setActiveItem(n.id + '-panel');
+	}
+	else if (n.leaf)
+	{
+		var ip = n.attributes.ip;
+		var givenname = n.attributes.givenname;
+		showPptStatusTab2(ip, givenname);
+	} */
+}
+
+var viewLoggedUser = function() {
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) 
+	  return;
+	
+	var ip = passport.get('ip'); 
+
+	loadLoggedUser(ip);
+}
+
+
+var viewPassportLog = function() {
+	var passport = getSelectedPassport(Ext.getCmp('passport-admin-grid'));
+	if (!passport) return;
+	
+	var ip = passport.get('ip'); 
+	
+	loadPassportLog(ip); 
+}
+
+var download_win;
+var download_form;
+
+function ShowDownloadForm(){
+	if (!download_win) {
+		download_win = new Ext.Window({
+			// el : 'topic-win',
+			layout : 'fit',
+			width : 360,
+			height : 210,
+			closeAction : 'hide',
+			plain : true,
+			title : '下载PuTTY程序',
+			iconCls: 'feed-icon',
+			items : download_form
+		});
+	}
+	download_win.show();
+}
+
+
+download_form = new Ext.FormPanel({  
+	url : 'AddPassport.action',
+	frame : true, 
+	bodyStyle : 'padding:5px 5px 0', 
+	waitMsgTarget : true, 
+	html:'<h1>本机没有安装或者无法找到PuTTY程序</h1> <p/>' +
+			'如果要执行SSH或者telnet操作，需要运行本地PuTTY程序。在本机没有找到可运行的PuTTY程序，' +
+			'请您点击以下链接下载PuTTY并保存到"C:\Windows"目录下，以便程序能安全调用！' + 
+			'<p><ul><li><a href="../admin/putty.exe"> 下载 PuTTY </a></li></ul></p>',
+	
+	buttons : [ /*{
+		text : '下载',
+		handler : function() {
+			window.open('../admin/putty.exe'); 
+		}
+	},*/ {
+		text : '关闭',
+		handler : function() {
+			download_win.hide();
+		}
+	}]
+});
+
+
+
+//==================================================
+
+    var xg = Ext.grid;
+
+
+
+// Array data for the grids
+cgdummyData = [
+    ['3m Co',71.72,0.02,0.03,'4/2 12:00am', 'Manufacturing'],
+    ['Alcoa Inc',29.01,0.42,1.47,'4/1 12:00am', 'Manufacturing'],
+    ['Altria Group Inc',83.81,0.28,0.34,'4/3 12:00am', 'Manufacturing'],
+    ['American Express Company',52.55,0.01,0.02,'4/8 12:00am', 'Finance'],
+    ['American International Group, Inc.',64.13,0.31,0.49,'4/1 12:00am', 'Services'],
+    ['AT&T Inc.',31.61,-0.48,-1.54,'4/8 12:00am', 'Services'],
+    ['Boeing Co.',75.43,0.53,0.71,'4/8 12:00am', 'Manufacturing'],
+    ['Caterpillar Inc.',67.27,0.92,1.39,'4/1 12:00am', 'Services'],
+    ['Citigroup, Inc.',49.37,0.02,0.04,'4/4 12:00am', 'Finance'],
+    ['E.I. du Pont de Nemours and Company',40.48,0.51,1.28,'4/1 12:00am', 'Manufacturing'],
+    ['Exxon Mobil Corp',68.1,-0.43,-0.64,'4/3 12:00am', 'Manufacturing'],
+    ['General Electric Company',34.14,-0.08,-0.23,'4/3 12:00am', 'Manufacturing'],
+    ['General Motors Corporation',30.27,1.09,3.74,'4/3 12:00am', 'Automotive'],
+    ['Hewlett-Packard Co.',36.53,-0.03,-0.08,'4/3 12:00am', 'Computer'],
+    ['Honeywell Intl Inc',38.77,0.05,0.13,'4/3 12:00am', 'Manufacturing'],
+    ['Intel Corporation',19.88,0.31,1.58,'4/2 12:00am', 'Computer'],
+    ['International Business Machines',81.41,0.44,0.54,'4/1 12:00am', 'Computer'],
+    ['Johnson & Johnson',64.72,0.06,0.09,'4/2 12:00am', 'Medical'],
+    ['JP Morgan & Chase & Co',45.73,0.07,0.15,'4/2 12:00am', 'Finance'],
+    ['McDonald\'s Corporation',36.76,0.86,2.40,'4/2 12:00am', 'Food'],
+    ['Merck & Co., Inc.',40.96,0.41,1.01,'4/2 12:00am', 'Medical'],
+    ['Microsoft Corporation',25.84,0.14,0.54,'4/2 12:00am', 'Computer'],
+    ['Pfizer Inc',27.96,0.4,1.45,'4/8 12:00am', 'Services', 'Medical'],
+    ['The Coca-Cola Company',45.07,0.26,0.58,'4/1 12:00am', 'Food'],
+    ['The Home Depot, Inc.',34.64,0.35,1.02,'4/8 12:00am', 'Retail'],
+    ['The Procter & Gamble Company',61.91,0.01,0.02,'4/1 12:00am', 'Manufacturing'],
+    ['United Technologies Corporation',63.26,0.55,0.88,'4/1 12:00am', 'Computer'],
+    ['Verizon Communications',35.57,0.39,1.11,'4/3 12:00am', 'Services'],
+    ['Wal-Mart Stores, Inc.',45.45,0.73,1.63,'4/3 12:00am', 'Retail'],
+    ['Walt Disney Company (The) (Holding Company)',29.89,0.24,0.81,'4/1 12:00am', 'Services']
+];
+
+
+    // shared reader
+    var reader = new Ext.data.ArrayReader({}, [
+       {name: 'company'},
+       {name: 'price', type: 'float'},
+       {name: 'change', type: 'float'},
+       {name: 'pctChange', type: 'float'},
+       {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'},
+       {name: 'industry'},
+       {name: 'desc'}
+    ]);
+
+    var cg_grid = new xg.GridPanel({
+        store: new Ext.data.GroupingStore({
+            reader: reader,
+            data: cgdummyData,
+            sortInfo:{field: 'company', direction: "ASC"},
+            groupField:'industry'
+        }),
+
+        columns: [
+            {id:'company',header: "Company", width: 60, sortable: true, dataIndex: 'company'},
+            {header: "Price", width: 20, sortable: true, renderer: Ext.util.Format.usMoney, dataIndex: 'price'},
+            {header: "Change", width: 20, sortable: true, dataIndex: 'change', renderer: Ext.util.Format.usMoney},
+            {header: "Industry", width: 20, sortable: true, dataIndex: 'industry'},
+            {header: "Last Updated", width: 20, sortable: true, renderer: Ext.util.Format.dateRenderer('m/d/Y'), dataIndex: 'lastChange'}
+        ],
+
+        view: new Ext.grid.GroupingView({
+            forceFit:true,
+            groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Items" : "Item"]})'
+        }),
+
+        frame:true,
+        width: 700,
+        height: 450,
+        collapsible: true,
+        animCollapse: false,
+        //title: 'Grouping Example',
+        iconCls: 'icon-grid' 
+    });
+ 
+
+
+
+var passportAdminMain5 = {
+	id : 'cg-test',
+	autoDestroy: false,
+	activeTab: 0,
+	enableTabScroll:true,
+	xtype:'tabpanel', 
+	items:[
+		cg_grid
+	] 
+};

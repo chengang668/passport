@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta name="generator" content="HTML Tidy, see www.w3.org">
+        <meta http-equiv="Content-Type" content="text/html; charset=GBK">
+        <title>Untitled Document</title>
+        <link rel="stylesheet" type="text/css" href="resource/ext-3.0.0/resources/css/ext-all.css"><!-- GC -->
+        <script type="text/javascript" src="resource/ext-3.0.0/adapter/ext/ext-base.js"></script>
+        <script type="text/javascript" src="resource/ext-3.0.0/ext-all.js"></script>
+    </head>
+    <body>
+    <script type="text/javascript">
+    function getBodyWidth(){
+        return document.body.clientWidth-15;
+    }
+    
+    function func_submit_onclick(){
+        alert('hello');
+    }
+    var _bodyWidth = getBodyWidth();
+    var _columns = 3 * 2;
+    var _perWidth = _bodyWidth/_columns;
+    
+    Ext.onReady(function(){
+        
+        Ext.QuickTips.init();
+        var tableForm=new Ext.FormPanel({
+            name:'tableForm',
+            id:'tableForm',
+            frame:true,
+            layout:'table', 
+            style:'height:100%',
+            layoutConfig: {columns:_columns},
+            title:'TableForm',
+            defaults:{border:false,layout:'form',frame:false,labelAlign:'right',labelWidth:75,width:_perWidth*2,height:30} 
+        });
+        tableForm.add({colspan:2,items:{xtype:'textfield',fieldLabel:'First Name1',anchor:'100%'}});
+        tableForm.add({colspan:2,items:{xtype:'textfield',fieldLabel:'First Name2',anchor:'100%'}});
+        tableForm.add({colspan:2,items:{xtype:'textfield',fieldLabel:'First Name3',anchor:'100%'}});
+        tableForm.add({colspan:1,width:_perWidth,items:{xtype:'datefield',fieldLabel:'First Name4',anchor:'100%'}});
+        tableForm.add({colspan:1,width:_perWidth,labelAlign:'center',items:{xtype:'datefield',fieldLabel:'to',anchor:'100%'}});
+        tableForm.add({colspan:2,items:{xtype:'textfield',fieldLabel:'First Name5',anchor:'100%'}});
+        tableForm.add({colspan:2,items:{xtype:'textfield',fieldLabel:'First Name6',anchor:'100%'}});
+        tableForm.add({colspan:4,width:_perWidth*4,items:{xtype:'textfield',fieldLabel:'First Name7',anchor:'100%'}});
+        
+        tableForm.addButton({text:'submit',handler:func_submit_onclick});
+        tableForm.addButton({text:'cancel'});
+        
+        tableForm.render(Ext.getBody());
+    });         
+    </script>
+    </body>
+</html>

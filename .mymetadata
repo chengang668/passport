@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="PassportManagement"
+  id="myeclipse.1250522925812"
+  context-root="/PassportManagement"
+  j2ee-spec="5.0"
+  archive="PassportManagement.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

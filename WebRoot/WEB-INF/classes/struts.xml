@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+    <constant name="objectFactory" value="spring"></constant>
+    <constant name="struts.action.extension" value="action" />
+    
+    <package name="Struts2_AJAX_DEMO" extends="json-default">
+        <action name="JsonPlugin" class="jsonPluginAction">
+            <result type="json" />
+        </action>            
+    </package>
+    
+	<package name="privilege" extends="struts-default">
+		<!-- Level -->
+		<action name="LevelAjaxJsonData" class="LevelAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadLevel" class="LevelAction" method="findLevelById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddLevel" class="LevelAction" method="persistLevel">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+	</package>
+	
+	<package name="passport" extends="struts-default">
+	
+		<global-results>
+            <result name="sql">/jsp/exception.jsp</result>
+            <result name="allexcept">/jsp/exception.jsp</result>
+        </global-results>
+        
+        <!-- global-exception-mappings必需在action的上面 -->  
+ 		<global-exception-mappings>  
+			<exception-mapping result="allexcept" exception="java.lang.Exception"> </exception-mapping>  
+		</global-exception-mappings> 
+
+	    <!-- Login -->
+		<action name="login" class="LoginAction" method="doLogin">
+			<result>/jsp/json_struts2.jsp</result>
+			<result name="input">/jsp/json_struts2.jsp</result> 
+			<result name="error">/jsp/json_struts2.jsp</result> 
+		</action>
+		
+		<action name="logout" class="LoginAction" method="doLogout">
+			<result>/loginPrompt.html</result>
+			<result name="input">/loginPrompt.html</result> 
+			<result name="error">/loginPrompt.html</result> 
+		</action>
+
+		<action name="getLoginUser" class="LoginAction" method="getLoginUser">
+			<result>/jsp/json_struts2.jsp</result>
+			<result name="input">/jsp/json_struts2.jsp</result> 
+			<result name="error">/jsp/json_struts2.jsp</result> 
+		</action>
+		
+		<action name="getOnlineUsers" class="LoginAction" method="getOnlineUsers">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- User -->
+		<action name="UserAjaxJsonData" class="UserAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadUser" class="UserAction" method="findUserById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddUser" class="UserAction" method="persistUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateUser" class="UserAction" method="updateUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveUser" class="UserAction" method="removeUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="GetPassportsOfUser" class="UserAction" method="findPassportsByUserId">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadPassportsOfLoginUser" class="UserAction" method="loadPassportsOfLoginUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadDevicesOfLoginUser" class="UserAction" method="loadDevicesOfLoginUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="GetDevicesOfUser" class="UserAction" method="findDevicesByUserId">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="GetUserDeviceInfo" class="UserAction" method="getUserDeviceInfo">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getSSHinfo" class="UserAction" method="getSSHinfo">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="SaveUserDeviceInfo" class="UserAction" method="saveUserDeviceInfo">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="GetGroupsOfUser" class="UserAction" method="findGroupsByUserId">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>		
+		<action name="AdminChgPwd" class="UserAction" method="AdminChangePassword">
+			<result>/jsp/json_struts2.jsp</result>
+			<result name="input">/jsp/json_struts2.jsp</result> 
+			<result name="error">/jsp/json_struts2.jsp</result> 
+		</action>
+		
+		<action name="ChangePassword" class="UserAction" method="ChangePassword">
+			<result>/jsp/json_struts2.jsp</result>
+			<result name="input">/jsp/json_struts2.jsp</result> 
+			<result name="error">/jsp/json_struts2.jsp</result> 
+		</action>
+		<action name="GetCurrentUser" class="UserAction" method="getCurrentUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="dialPPP" class="UserAction" method="dialPPP">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="closePPP" class="UserAction" method="closePPP">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<!-- Group -->
+		<action name="groupData" class="GroupAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadGroup" class="GroupAction" method="findGroupById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddGroup" class="GroupAction" method="saveGroup">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateGroup" class="GroupAction" method="updateGroup">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveGroup" class="GroupAction" method="removeGroup">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<!-- District -->
+		<action name="districtData" class="DistrictAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadDistrict" class="DistrictAction" method="findDistrictById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddDistrict" class="DistrictAction" method="saveDistrict">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateDistrict" class="DistrictAction" method="updateDistrict">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveDistrict" class="DistrictAction" method="removeDistrict">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- Site -->
+		<action name="siteData" class="SiteAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadSite" class="SiteAction" method="findSiteById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddSite" class="SiteAction" method="saveSite">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateSite" class="SiteAction" method="updateSite">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveSite" class="SiteAction" method="removeSite">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- Dept -->
+		<action name="deptData" class="DeptAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadDept" class="DeptAction" method="findDeptById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddDept" class="DeptAction" method="saveDept">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateDept" class="DeptAction" method="updateDept">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveDept" class="DeptAction" method="removeDept">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- Ipfilter -->
+		<action name="ipfilterData" class="IpfilterAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="LoadIpfilter" class="IpfilterAction" method="findIpfilterById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="AddIpfilter" class="IpfilterAction" method="saveIpfilter">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="UpdateIpfilter" class="IpfilterAction" method="updateIpfilter">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="RemoveIpfilter" class="IpfilterAction" method="removeIpfilter">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- Manager -->
+		<action name="managerData" class="ManagerAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<!-- Passport -->
+		<action name="passportData" class="PassportAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<action name="LoadPassport" class="PassportAction" method="findById">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<action name="AddPassport" class="PassportAction" method="addPassport">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<action name="UpdatePassport" class="PassportAction" method="updatePassport">
+			<result>/jsp/json_struts2.jsp</result>
+		</action> 
+		
+		<action name="getPassportPortsList" class="PassportAction" method="getPassportPortsList">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<action name="getPassportIpList" class="PassportAction" method="getPassportIpList">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<!-- Device -->
+		<action name="deviceData" class="DeviceAction" method="jsonExecute">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<!-- PassportAdmin -->
+		<action name="passportTreeLoader" class="PassportAdminAction" method="loadPassportTree">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="loadPptTreeForLogview" class="PassportAdminAction" method="loadPptTreeForLogview">
+			<result>/jsp/json_struts2.jsp</result>
+		</action> 
+		<action name="loadDeviceTree" class="PassportAdminAction" method="loadDeviceTree">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getLoggedUser" class="PassportAdminAction" method="getLoggedUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getPortLoggedUser" class="PassportAdminAction" method="getPortLoggedUser">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getDigiLog" class="PassportAdminAction" method="getDigiLog">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getDigiIP" class="PassportAdminAction" method="getDigiIP">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getDigiPPP" class="PassportAdminAction" method="getDigiPPP">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="getDigiIpFilter" class="PassportAdminAction" method="getDigiIpFilter">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="populateDevices" class="PassportAdminAction" method="populateDevices">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="renamePortTitle" class="PassportAdminAction" method="renamePortTitle">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="setPortBaudrate" class="PassportAdminAction" method="setPortBaudrate">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="setPassportIP" class="PassportAdminAction" method="setPassportIP">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="QueryLog" class="LogAction" method="querylog">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="QueryLog4port" class="LogAction" method="querylog4port">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		
+		<action name="DownloadSystemLog" class="LogAction" method="savelog">
+			<result name="success" type="stream">
+				<param name="contentType">text/plain</param>
+				<param name="inputName">inputStream</param>
+				<param name="contentDisposition">attachment;filename="system_log.txt"</param>
+				<param name="bufferSize">4096</param>
+			</result>
+		</action>
+		
+		<action name="DownloadPortLog" class="LogAction" method="savePortlog">
+			<result name="success" type="stream">
+				<param name="contentType">text/plain</param>
+				<param name="inputName">inputStream</param>
+				<param name="contentDisposition">attachment;filename="port_log.txt"</param>
+				<param name="bufferSize">4096</param>
+			</result>
+		</action>	
+		
+		<action name="DeleteSystemLog" class="LogAction" method="deleteSystemlog">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+		<action name="DeletePortLog" class="LogAction" method="deletePortlog">
+			<result>/jsp/json_struts2.jsp</result>
+		</action>
+
+		<action name="DownloadSecureCRT" class="com.cg.passportmanagement.action.FileDownloadAction" method="downloadSecureCRT">
+        	<param name="inputPath">/admin/SecureCRT.zip</param>
+			<!-- 配置结果类型为stream的结果 -->
+			<result name="success" type="stream">
+				<param name="contentType">application/zip</param>
+				<param name="inputName">targetFile</param>
+				<param name="contentDisposition">attachment;filename="SecureCRT.zip"</param>
+				<!-- 指定下载文件的缓冲区大小 -->
+				<param name="bufferSize">4096</param>
+			</result>
+		</action>
+		
+		<!-- A door for downloading others -->
+		<action name="Download" class="com.cg.passportmanagement.action.FileDownloadAction">
+        	<param name="inputPath">/admin/SecureCRT.zip</param>
+			<!-- 配置结果类型为stream的结果 -->
+			<result name="success" type="stream">
+				<param name="contentType">application/zip</param>
+				<param name="inputName">targetFile</param>
+				<param name="contentDisposition">attachment;filename="${downloadFileName}"</param>
+				<!-- 指定下载文件的缓冲区大小 -->
+				<param name="bufferSize">4096</param>
+			</result>
+		</action>
+		
+	</package> 
+</struts>

@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+	<head>
+	<link rel="stylesheet" type="text/css" href="resource/ext-3.0.0/resources/css/ext-all.css"/>
+	<script type="text/javascript" src="resource/ext-3.0.0/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="resource/ext-3.0.0/ext-all.js"></script>
+
+<script type="text/javascript">
+Ext.onReady( function(){
+    // Define Tree.
+    var Tree_Category_Loader = new Ext.tree.TreeLoader({
+        dataUrl   :"tx_taw_models_ProjectCategoryListProxy.php"
+    });
+    var Tree_Category = new Ext.tree.TreePanel({
+        title            : 'My Category Tree',
+        collapsible      : false,
+        animCollapse     : false,
+        border           : true,
+        id               : "tree_projectcategory",
+        el               : "tree_projectcategory",
+        autoScroll       : true,
+        animate          : false,
+        enableDD         : true,
+        containerScroll  : true,
+        height           : 100,
+        width            : 300,
+        loader           : Tree_Category_Loader
+    });
+ 
+    // SET the root node.
+    var Tree_Category_Root = new Ext.tree.AsyncTreeNode({
+        text		: 'My Root Node',
+        draggable	: false,
+        id		: '0'                  // this IS the id of the startnode
+    });
+ 
+    // Render the tree.
+    Tree_Category.setRootNode(Tree_Category_Root);
+    Tree_Category.render();
+    Tree_Category_Root.expand();
+});						
+</script>
+
+	</head>
+	<body><div id="tree_projectcategory" ></div></body>
+</html>

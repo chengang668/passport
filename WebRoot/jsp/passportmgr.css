@@ -1,0 +1,138 @@
+
+html, body {
+	font:normal 14px verdana;
+	margin:0;
+	padding:0;
+	border:0 none;
+	overflow:hidden;
+	height:100%;
+}
+
+#header {
+    background: #7F99BE url(../resource/images/layout-browser-hd-bg.gif) repeat-x center;
+}
+#header h1 {
+    font-size: 16px;
+    color: #fff;
+    font-weight: normal;
+    padding: 6px 10px;
+}
+#header span {
+    font-size: 16px;
+    color: #fff;
+    font-weight: normal;
+    padding: 6px 1px;
+}
+
+#header a {
+    font-size: 16px;
+    color: #fff;
+    font-weight: normal;
+    padding: 5px 10px;
+}
+
+#start-div h2 {
+    font-size: 12px;
+    color: #555;
+    padding-bottom:5px;
+    border-bottom:1px solid #C3D0DF;
+}
+#start-div p {
+    margin: 10px 0;
+}
+
+.x-panel-body p {
+	margin:5px;
+}
+.x-column-layout-ct .x-panel {
+	margin-bottom:5px;
+}
+.x-column-layout-ct .x-panel-dd-spacer {
+	margin-bottom:5px;
+}
+.settings {
+	background-image:url(../resource/icons/fam/folder_wrench.png) !important;
+}
+.nav {
+	background-image:url(../resource/icons/fam/folder_go.png) !important;
+}
+
+.user-admin {
+	background-image:url(../resource/icons/fam/user.gif) !important;
+}
+
+.user-icon {
+	background-image:url(../resource/icons/fam/user.gif) !important;
+}
+
+.user-add {
+    background-image: url( ../resource/images/add.gif ) !important;
+}
+.user-add16 {
+    background-image: url( ../resource/images/add16.gif ) !important;
+}
+.user-mod16{
+    background-image: url( ../resource/images/user_edit16.png ) !important;
+}
+.user-del16{
+    background-image: url( ../resource/images/user_delete16.gif ) !important;
+}
+
+.user-add24 {
+    background-image: url( ../resource/images/add.gif ) !important;
+}
+.user-mod24{
+    background-image: url( ../resource/images/user-edit.gif ) !important;
+}
+.user-del24{
+    background-image: url( ../resource/images/user-delete.gif ) !important;
+}
+
+.group-icon{
+	background-image: url( ../resource/images/group.png ) !important;
+}
+.group-add24 {
+    background-image: url( ../resource/images/group.png ) !important;
+}
+.group-mod24{
+    background-image: url( ../resource/images/edit.png ) !important;
+}
+.group-del24{
+    background-image: url( ../resource/images/delete.gif ) !important;
+}
+.telnet-ssh32{
+    background-image: url( ../resource/images/telnet32.png ) !important;
+}
+.telnet-ssh16{
+    background-image: url( ../resource/images/telnet16.png ) !important;
+}
+.phone-set{
+    background-image: url( ../resource/images/phone.jpg ) !important;
+}
+.phone-down{
+    background-image: url( ../resource/images/phone-down.jpg ) !important;
+}
+.yes-icon{
+    background-image: url( ../resource/images/yes.gif ) !important;
+}
+.cg-log-icon{
+    background-image: url( ../resource/images/cg_log.gif ) !important;
+}
+.cg-log-sys-icon{
+    background-image: url( ../resource/images/cg_log_sys.png ) !important;
+}
+.cg-log-port-icon{
+    background-image: url( ../resource/images/cg_log_port.gif ) !important;
+}
+.cg-connect-icon{
+    background-image: url( ../resource/images/cg_connect.png ) !important;
+}
+.cg-online-user-icon{
+    background-image: url( ../resource/images/cg_online_user.gif ) !important;
+}
+.cg-log-delete{
+    background-image: url( ../resource/images/delete.gif ) !important;
+}
+.cg-log-save{
+    background-image: url( ../resource/images/disk.png ) !important;
+}

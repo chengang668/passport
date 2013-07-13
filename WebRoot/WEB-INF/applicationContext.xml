@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean id="config" class="com.cg.passportmanagement.common.Config" scope="singleton" >
+		<property name="sshUser" value="ooboperator"> </property>
+		<property name="sshPassword" value="1QAZxsw23EDC"></property>
+		<property name="directConnectToPassport" value="true"></property>
+		<property name="serverIP" value="192.168.0.126"></property>
+		<!-- 密码错误累计重试次数，默认3次 -->
+		<property name="maxPasswordRetry" value="3"></property>
+		<!-- 帐号解锁时间 ，默认3小时-->
+		<property name="unlockInterval" value="3"></property>
+		<!-- 密码过期天数，默认365天 -->
+		<property name="pwdExpireDays" value="365"></property>
+	</bean>
+
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"> </property>
+		<property name="url" value="jdbc:mysql://localhost/passport"></property>
+		<property name="username" value="ppt"></property>
+		<property name="password" value="ppt"></property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list>
+				<value>privilege.database.Level</value>
+				<value>com.cg.passportmanagement.database.User</value>
+				<value>com.cg.passportmanagement.database.Groups</value>
+				<value>com.cg.passportmanagement.database.UserGroup</value>
+				<value>com.cg.passportmanagement.database.District</value>
+				<value>com.cg.passportmanagement.database.Site</value>
+				<value>com.cg.passportmanagement.database.Dept</value>
+				<value>com.cg.passportmanagement.database.Passport</value>
+				<value>com.cg.passportmanagement.database.Device</value>
+				<value>com.cg.passportmanagement.database.Manager</value>
+				<value>com.cg.passportmanagement.database.Passport</value>
+				<value>com.cg.passportmanagement.database.UserPassportAcl</value>
+				<value>com.cg.passportmanagement.database.DigiLog</value>
+				<value>com.cg.passportmanagement.database.UserDeviceAcl</value>
+				<value>com.cg.passportmanagement.database.Logs</value>
+				<value>com.cg.passportmanagement.database.Log4port</value>
+				<value>com.cg.passportmanagement.database.Ipfilter</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="springContextUtil"
+		class="com.cg.passportmanagement.common.SpringContextUtil" scope="singleton" >
+	</bean>
+	
+	<bean id= "jsonPluginAction"
+	    class="tutorial.JsonPluginAction" >
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property></bean>
+		
+	<bean id="baseTransactionProxy"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"	abstract="true">
+		<property name="transactionManager"	ref = "transactionManager"> </property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="persist*">PROPAGATION_REQUIRED,-Exception</prop>
+                <prop key="save*">PROPAGATION_REQUIRED,-Exception</prop>  
+				<prop key="remove*">PROPAGATION_REQUIRED,-Exception</prop>
+                <prop key="del*">PROPAGATION_REQUIRED,-Exception</prop>  
+                <prop key="query*">PROPAGATION_REQUIRED,readOnly</prop>  
+<!-- 
+                    <prop key="insert*">PROPAGATION_REQUIRED</prop>  
+                    <prop key="save">PROPAGATION_REQUIRED</prop>  
+                    <prop key="update*">PROPAGATION_REQUIRED</prop>  
+                    <prop key="edit*">PROPAGATION_REQUIRED</prop>  
+                    <prop key="del*">PROPAGATION_REQUIRED</prop>  
+                    <prop key="query*">PROPAGATION_REQUIRED,readOnly</prop>  
+                    <prop key="disPlay*">PROPAGATION_REQUIRES_NEW</prop>  
+-->
+            </props>
+        </property>
+	</bean>
+	<bean id="LevelService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="privilege.service.LevelService">
+				<property name="dao">
+					<bean class="privilege.dao.LevelDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property></bean></property></bean></property>
+	</bean>
+	<bean id="LevelAction" class="privilege.action.LevelAction">
+		<property name="levelService" ref="LevelService"></property></bean>
+
+	<bean id="UserService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.UserService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.UserDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property>
+					</bean>
+				</property>
+				<property name="aclDao" ref="UserPassportAclDAO"></property>
+				<property name="ugDao" ref="UserGroupDAO"></property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="UserAction" class="com.cg.passportmanagement.action.UserAction" scope="prototype">
+		<property name="userService" ref="UserService"></property></bean>
+		
+	<bean id="GroupService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.GroupService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.GroupsDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property>
+					</bean>
+				</property> 
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="GroupAction" class="com.cg.passportmanagement.action.GroupAction" scope="prototype">
+		<property name="groupService" ref="GroupService"></property></bean>
+
+	<bean id="DistrictService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.DistrictService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.DistrictDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property></bean></property></bean></property>
+	</bean>
+	
+	<bean id="SiteService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.SiteService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.SiteDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property></bean></property></bean></property>
+	</bean>
+
+	<bean id="DistrictAction" class="com.cg.passportmanagement.action.DistrictAction" scope="prototype">
+		<property name="districtService" ref="DistrictService"></property></bean>
+			
+	<bean id="SiteAction" class="com.cg.passportmanagement.action.SiteAction" scope="prototype">
+		<property name="siteService" ref="SiteService"></property>
+		<property name="districtService" ref="DistrictService"></property>
+	</bean>
+
+	<bean id="DeptService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.DeptService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.DeptDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property></bean></property></bean></property>
+	</bean>
+	
+	<bean id="DeptAction" class="com.cg.passportmanagement.action.DeptAction" scope="prototype">
+		<property name="deptService" ref="DeptService"></property></bean>
+
+		
+	<bean id="ManagerService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.ManagerService">
+				<property name="dao">
+					<bean class="com.cg.passportmanagement.dao.ManagerDAO">
+						<property name="sessionFactory" ref="sessionFactory"> </property></bean></property></bean></property>
+	</bean>
+	
+	<bean id="ManagerAction" class="com.cg.passportmanagement.action.ManagerAction" scope="prototype">
+		<property name="managerService" ref="ManagerService"></property></bean>
+		
+	
+	<bean id="PassportService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.PassportService">
+				<property name="dao" ref="PassportDAO"></property>
+				<property name="aclDao" ref="UserPassportAclDAO"></property>
+				<property name="deviceDao" ref="DeviceDAO"></property>						
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="PassportAction" class="com.cg.passportmanagement.action.PassportAction" scope="prototype">
+		<property name="passportService" ref="PassportService"></property>
+		<property name="deptService" ref="DeptService"></property>
+		<property name="siteService" ref="SiteService"></property>
+	</bean>
+	
+	<bean id="PassportAdminAction" class="com.cg.passportmanagement.action.PassportAdminAction" scope="prototype">
+		<property name="userService" ref="UserService"></property>
+		<property name="passportService" ref="PassportService"></property>
+		<property name="deviceService" ref="DeviceService"></property>
+	</bean>
+	
+	<bean id="DeviceService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.DeviceService">
+				<property name="dao" ref="DeviceDAO"></property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="DeviceAction" class="com.cg.passportmanagement.action.DeviceAction" scope="prototype">
+		<property name="deviceService" ref="DeviceService"></property></bean>
+		
+	<bean id="UserPassportAclDAO" class="com.cg.passportmanagement.dao.UserPassportAclDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="PassportDAO" class="com.cg.passportmanagement.dao.PassportDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="DeviceDAO" class="com.cg.passportmanagement.dao.DeviceDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory"/>
+		</property>
+	</bean>
+					
+	<bean id="UserGroupDAO" class="com.cg.passportmanagement.dao.UserGroupDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+
+	<bean id="UserDeviceAclDAO" class="com.cg.passportmanagement.dao.UserDeviceAclDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="LoginAction" class="com.cg.passportmanagement.action.LoginAction" scope="prototype">
+		<property name="userService" ref="UserService"></property>
+	</bean> 
+
+	<bean id="DigiLogDAO" class="com.cg.passportmanagement.dao.DigiLogDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="LogsDAO" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.dao.LogsDAO">
+				<property name="sessionFactory">
+				   <ref bean="sessionFactory"/> 
+				</property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="Log4portDAO" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.dao.Log4portDAO">
+				<property name="sessionFactory">
+				   <ref bean="sessionFactory"/> 
+				</property>
+			</bean>
+		</property>
+	</bean>
+	
+	
+	<bean id="LogAction" class="com.cg.passportmanagement.action.LogAction" scope="prototype">
+		<property name="logsdao" ref="LogsDAO"></property>
+		<property name="log4portdao" ref="Log4portDAO"></property>
+	</bean>
+
+	<bean id="IpfilterDAO" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.dao.IpfilterDAO">
+				<property name="sessionFactory">
+				   <ref bean="sessionFactory"/> 
+				</property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="IpfilterAction" class="com.cg.passportmanagement.action.IpfilterAction" scope="prototype">
+	</bean>
+		
+	
+	<bean id="DigiService" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="com.cg.passportmanagement.service.DigiService">
+				<property name="digiLogDao" ref="DigiLogDAO"> </property> 
+			</bean>
+		</property>
+	</bean>
+
+</beans>
